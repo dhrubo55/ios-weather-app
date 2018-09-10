@@ -44,7 +44,51 @@
     //[request setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
     //[request setHTTPBody:postData];
 
+    // api data fetch
+    NSURLSession *session = [NSURLSession sharedSession];
+    NSURLSessionDataTask *task = [session dataTaskWithRequest:request
+                                            completionHandler:
+                                  ^(NSData *data, NSURLResponse *response, NSError *error) {
+                                      if (data == nil) {
+                                          [self printCannotLoad];
+                                      } else {
+                                          NSLog(@"%@",data);
+                                          [self parseWeatherJSON:data];
+                                      }
+                                  }];
+    [task resume];
     
 }
+
+- (void) parseWeatherJSON:(NSData *) jsonData {
+    NSError *error = nil;
+    id object = [NSJSONSerialization
+                 JSONObjectWithData:jsonData
+                 options:0
+                 error:&error];
+    
+    if(error) {
+        [self printCannotLoad];
+        return;
+    }
+    
+    if ([object isKindOfClass:[NSDictionary class]]) {
+        NSDictionary *mainObject = [object valueForKey:@"main"];
+        NSDictionary *weatherObject = [object valueForKey:@"weather"][0];
+        NSString *textString = [NSString stringWithFormat:@"%@, %@ celsius", weatherObject[@"description"], mainObject[@"temp"]];
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            _display_weather_result.text = textString;
+        });
+    } else {
+    }
+}
+
+- (void) printCannotLoad {
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        _display_weather_result.text = @"cannot load";
+    });
+}
+    
+
 
 @end
