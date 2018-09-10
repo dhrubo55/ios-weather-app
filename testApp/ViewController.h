@@ -9,7 +9,8 @@
 #import <UIKit/UIKit.h>
 
 @interface ViewController : UIViewController
-
+@property (strong, nonatomic) IBOutlet UITextField *country_name_input;
+@property (strong, nonatomic) IBOutlet UILabel *display_weather_result;
 
 @end
 
